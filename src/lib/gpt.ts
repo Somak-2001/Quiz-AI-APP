@@ -1,9 +1,9 @@
-import OpenAI from 'openai';
+import { Configuration, OpenAIApi } from "openai";
 
-const openai = new OpenAI({
-  apiKey: 'my api key', // defaults to process.env["OPENAI_API_KEY"]
+const configuration = new Configuration({
+  apiKey: process.env.OPENAI_API_KEY,
 });
-// const openai = new OpenAIApi(configuration);
+const openai = new OpenAIApi(configuration);
 
 interface OutputFormat {
   [key: string]: string | string[] | OutputFormat;
@@ -15,7 +15,7 @@ export async function strict_output(
   output_format: OutputFormat,
   default_category: string = "",
   output_value_only: boolean = false,
-  model: string = "gpt-4",
+  model: string = "gpt-3.5-turbo",
   temperature: number = 1,
   num_tries: number = 3,
   verbose: boolean = false
@@ -55,7 +55,7 @@ export async function strict_output(
     }
 
     // Use OpenAI to get a response
-    const response = await openai.chat.completions.create({
+    const response = await openai.createChatCompletion({
       temperature: temperature,
       model: model,
       messages: [
@@ -68,7 +68,7 @@ export async function strict_output(
     });
 
     let res: string =
-      response.choices[0].message?.content?.replace(/'/g, '"') ?? "";
+      response.data.choices[0].message?.content?.replace(/'/g, '"') ?? "";
 
     // ensure that we don't replace away apostrophes in text
     res = res.replace(/(\w)"(\w)/g, "$1'$2");
